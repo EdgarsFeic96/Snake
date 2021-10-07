@@ -70,14 +70,6 @@ class Game:
                 self._fruitx = randint(0, self._width-1)
                 self._fruity = randint(0, self._height-1)
                 continue
-
-            # if self._fruity == 0 or self._fruity == self._height-1:
-            #     self._fruity = randint(0, self._height-1)
-            #     continue
-
-            # if self._fruitx == 0 or self._fruitx == self._width-1:
-            #     self._fruitx = randint(0, self._width-1)
-            #     continue
             break
 
     def spawnSnake(self):
