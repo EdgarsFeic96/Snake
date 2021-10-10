@@ -17,7 +17,7 @@ class Game:
         self._fruity = 0
         self._fruitx = 0
         # Snake
-        self._snake = ''
+        self._snake = []
         self._snakeX = 0
         self._snakeY = 0
         self._snake_len = 4
@@ -70,14 +70,6 @@ class Game:
                 self._fruitx = randint(0, self._width-1)
                 self._fruity = randint(0, self._height-1)
                 continue
-
-            # if self._fruity == 0 or self._fruity == self._height-1:
-            #     self._fruity = randint(0, self._height-1)
-            #     continue
-
-            # if self._fruitx == 0 or self._fruitx == self._width-1:
-            #     self._fruitx = randint(0, self._width-1)
-            #     continue
             break
 
     def spawnSnake(self):
@@ -85,6 +77,7 @@ class Game:
         self._snakeY = self._height//2
         self._gameboard[self._snakeY][self._snakeX] = 'O'
         for i in range(self._snake_len):
+            # self._snake
             self._gameboard[self._snakeY][self._snakeX-i] = '0'
 
 
