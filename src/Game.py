@@ -3,9 +3,14 @@ from fpstimer import FPSTimer
 import sys, os
 import getch
 
+_CLEAR = 'CLS' if os.name == 'nt' else 'clear'
 _GREEN = '\033[32;1m'
 _RED = '\033[31;1m'
 _WHITE = '\033[0m'
+
+debug = False
+if '-dbg' in sys.argv:
+    debug = True
 
 def clear():
     if os.name == 'nt':
@@ -112,6 +117,10 @@ class Game:
         # for fila in self._gameboard:
         #     sys.stdout.write(f'{str(fila)}\n')
         sys.stdout.write(f'Score: {self._score}\n')
+        if debug:
+            sys.stdout.write(f'{self._snake}\n')
+            sys.stdout.write(f'{self._snakeDir}\n')
+            sys.stdout.write(f'{self._snake_len}\n')
 
     def update(self):
         '''Actualiza el juego'''
@@ -144,10 +153,14 @@ class Game:
             return
 
         # Establece la direccion
-        for i in range(self._snake_len-1):
-            if self._snakeDir[i+1] != self._snakeDir[i]:
-               self._snakeDir[i+1] = self._snakeDir[i]
-               break
+        # for i in range(self._snake_len-1):
+        #     if self._snakeDir[i+1] != self._snakeDir[i]:
+        #        self._snakeDir[i+1] = self._snakeDir[i]
+        #        break
+
+        for i in range(self._snake_len-1, 0, -1):
+            self._snakeDir[i] = self._snakeDir[i-1]
+        
 
         # Dibuja la serpiente
         for i in range(self._snake_len):
@@ -177,13 +190,17 @@ class Game:
             self._death = True
         if self._snakeY == 0 or self._snakeY == self._height-1:
             self._death == True
+        for i in range(1, self._snake_len):
+            if self._snake[i] == [self._snakeY, self._snakeX]:
+                self._death = True
         
     def loop(self):
         timer = FPSTimer(10)
         # self._snakeDir[0] = [1,0]
         while(True):
             ch = getch.getch()
-            clear()
+            # clear()
+            os.system(_CLEAR)
 
             if ch == 'w':
                 if self._snakeDir[0] != [1, 0]:
