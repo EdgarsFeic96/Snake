@@ -1,9 +1,10 @@
 from random import randint
 from fpstimer import FPSTimer
-import sys, os
+import sys
+import os
 import getch
 
-_CLEAR = 'CLS' if os.name == 'nt' else 'clear'
+_CLEAR = 'cls' if os.name == 'nt' else 'clear'
 _GREEN = '\033[32;1m'
 _RED = '\033[31;1m'
 _WHITE = '\033[0m'
@@ -12,11 +13,13 @@ debug = False
 if '-dbg' in sys.argv:
     debug = True
 
+
 def clear():
     if os.name == 'nt':
         os.system('CLS')
     else:
         os.system('clear')
+
 
 class Game:
     def __init__(self) -> None:
@@ -44,11 +47,10 @@ class Game:
         self.spawnSnake()
         self.spawnFruit()
 
-        # self._fruitx = (self._width//2) + 1
-        # self._fruity = (self._height//2) + 8
-
         self.update()
         self.show()
+
+        self.loop()
 
     def createGameboard(self):
         '''Crea la cuadricula del juego'''
@@ -80,11 +82,6 @@ class Game:
         self._fruitx = randint(0, self._width-1)
         self._fruity = randint(0, self._height-1)
 
-        # self._fruitx = self._width//2
-        # self._fruity = self._height//2
-
-        # self._gameboard[self._fruity][self._fruitx] = '@'
-
         while True:
             if self._gameboard[self._fruity][self._fruitx] != ' ':
                 self._fruitx = randint(0, self._width-1)
@@ -105,17 +102,12 @@ class Game:
         for i in range(self._snake_len-1):
             self._snake.append([self._snakeY, self._snakeX-i-1])
 
-    # def updateSnake(self):
-
-
     def show(self):
         '''Muestra el juego'''
         for fila in self._gameboard:
             for columna in fila:
                 sys.stdout.write(f'{columna}')
             sys.stdout.write('\n')
-        # for fila in self._gameboard:
-        #     sys.stdout.write(f'{str(fila)}\n')
         sys.stdout.write(f'Score: {self._score}\n')
         if debug:
             sys.stdout.write(f'{self._snake}\n')
@@ -127,8 +119,6 @@ class Game:
         # Coloca la fruta en el tablero
         self._gameboard[self._fruity][self._fruitx] = f'{_RED}@{_WHITE}'
 
-
-        
         # Vacia los caracteres de la serpiente
         self._gameboard[self._snakeY][self._snakeX] = ' '
         for i in range(self._snake_len):
@@ -152,21 +142,14 @@ class Game:
             self._death = True
             return
 
-        # Establece la direccion
-        # for i in range(self._snake_len-1):
-        #     if self._snakeDir[i+1] != self._snakeDir[i]:
-        #        self._snakeDir[i+1] = self._snakeDir[i]
-        #        break
-
         for i in range(self._snake_len-1, 0, -1):
             self._snakeDir[i] = self._snakeDir[i-1]
-        
 
         # Dibuja la serpiente
         for i in range(self._snake_len):
-            self._gameboard[self._snake[i-1][0]][self._snake[i-1][1]] = f'{_GREEN}0{_WHITE}'
+            self._gameboard[self._snake[i-1][0]
+                            ][self._snake[i-1][1]] = f'{_GREEN}0{_WHITE}'
         self._gameboard[self._snakeY][self._snakeX] = f'{_GREEN}O{_WHITE}'
-
 
     def eatFruit(self):
         if self._snakeX == self._fruitx and self._snakeY == self._fruity:
@@ -181,9 +164,7 @@ class Game:
 
             self._snakeDir.append(tempDir)
             self._snake.append(tempCoord)
-            # self._snake[-1][-1] -= self._snakeDir[-1][-1]
             self.spawnFruit()
-
 
     def isDeath(self):
         if self._snakeX == 0 or self._snakeX == self._width-1:
@@ -193,13 +174,11 @@ class Game:
         for i in range(1, self._snake_len):
             if self._snake[i] == [self._snakeY, self._snakeX]:
                 self._death = True
-        
+
     def loop(self):
         timer = FPSTimer(10)
-        # self._snakeDir[0] = [1,0]
         while(True):
             ch = getch.getch()
-            # clear()
             os.system(_CLEAR)
 
             if ch == 'w':
@@ -217,8 +196,6 @@ class Game:
             else:
                 pass
 
-
-            
             self.update()
             self.isDeath()
             self.show()
@@ -228,9 +205,6 @@ class Game:
             timer.sleep()
 
 
-
-
 if __name__ == '__main__':
     game = Game()
     game.startGame()
-    game.loop()
