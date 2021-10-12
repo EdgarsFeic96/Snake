@@ -1,6 +1,7 @@
 from random import randint
 from fpstimer import FPSTimer
 import sys, os
+import getch
 
 _GREEN = '\033[32;1m'
 _RED = '\033[31;1m'
@@ -36,10 +37,10 @@ class Game:
     def startGame(self):
         '''Función que inicia el juego'''
         self.spawnSnake()
-        # self.spawnFruit()
+        self.spawnFruit()
 
-        self._fruitx = (self._width//2) + 1
-        self._fruity = (self._height//2) + 8
+        # self._fruitx = (self._width//2) + 1
+        # self._fruity = (self._height//2) + 8
 
         self.update()
         self.show()
@@ -181,9 +182,27 @@ class Game:
         timer = FPSTimer(10)
         # self._snakeDir[0] = [1,0]
         while(True):
+            ch = getch.getch()
             clear()
-            self.update()
 
+            if ch == 'w':
+                if self._snakeDir[0] != [1, 0]:
+                    self._snakeDir[0] = [-1, 0]
+            elif ch == 'd':
+                if self._snakeDir[0] != [0, -1]:
+                    self._snakeDir[0] = [0, 1]
+            elif ch == 's':
+                if self._snakeDir[0] != [-1, 0]:
+                    self._snakeDir[0] = [1, 0]
+            elif ch == 'a':
+                if self._snakeDir[0] != [0, 1]:
+                    self._snakeDir[0] = [0, -1]
+            else:
+                pass
+
+
+            
+            self.update()
             self.isDeath()
             self.show()
             if self._death == True:
@@ -191,11 +210,10 @@ class Game:
                 break
             timer.sleep()
 
-def main():
-    game = Game()
-    game.startGame()
-    game.loop()
+
 
 
 if __name__ == '__main__':
-    main()
+    game = Game()
+    game.startGame()
+    game.loop()
