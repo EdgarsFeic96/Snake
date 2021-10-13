@@ -2,23 +2,20 @@ from random import randint
 from fpstimer import FPSTimer
 import sys
 import os
-import getch
+import msvcrt
 
 _CLEAR = 'cls' if os.name == 'nt' else 'clear'
 _GREEN = '\033[32;1m'
 _RED = '\033[31;1m'
 _WHITE = '\033[0m'
+_BLOCK = '\U00002588'
 
 debug = False
 if '-dbg' in sys.argv:
     debug = True
-
-
-def clear():
-    if os.name == 'nt':
-        os.system('CLS')
-    else:
-        os.system('clear')
+    _TOTAL_HEIGHT = 15
+else:
+    _TOTAL_HEIGHT = 2
 
 
 class Game:
@@ -41,6 +38,7 @@ class Game:
         self._death = False
         # Score
         self._score = 0
+        self._fruitCount = 0
 
     def startGame(self):
         '''Función que inicia el juego'''
@@ -90,6 +88,7 @@ class Game:
             break
 
     def spawnSnake(self):
+        '''Coloca la serpiente en el mapa al iniciar el juego'''
         self._snakeX = self._width//2
         self._snakeY = self._height//2
 
@@ -103,21 +102,21 @@ class Game:
             self._snake.append([self._snakeY, self._snakeX-i-1])
 
     def show(self):
-        '''Muestra el juego'''
+        '''Muestra el estado del juego'''
         for fila in self._gameboard:
             for columna in fila:
                 sys.stdout.write(f'{columna}')
             sys.stdout.write('\n')
-        sys.stdout.write(f'Score: {self._score}\n')
+        sys.stdout.write(f'Score: {self._score}  |  Fruta comida: {self._fruitCount}'.center(
+            self._width, ' ') + '\n')
         if debug:
             sys.stdout.write(f'{self._snake}\n')
-            sys.stdout.write(f'{self._snakeDir}\n')
-            sys.stdout.write(f'{self._snake_len}\n')
+            sys.stdout.write(f'{self._snakeDir}')
 
     def update(self):
-        '''Actualiza el juego'''
+        '''Actualiza los eventos del juego'''
         # Coloca la fruta en el tablero
-        self._gameboard[self._fruity][self._fruitx] = f'{_RED}@{_WHITE}'
+        self._gameboard[self._fruity][self._fruitx] = f'{_RED}{_BLOCK}{_WHITE}'
 
         # Vacia los caracteres de la serpiente
         self._gameboard[self._snakeY][self._snakeX] = ' '
@@ -148,12 +147,14 @@ class Game:
         # Dibuja la serpiente
         for i in range(self._snake_len):
             self._gameboard[self._snake[i-1][0]
-                            ][self._snake[i-1][1]] = f'{_GREEN}0{_WHITE}'
-        self._gameboard[self._snakeY][self._snakeX] = f'{_GREEN}O{_WHITE}'
+                            ][self._snake[i-1][1]] = f'{_GREEN}{_BLOCK}{_WHITE}'
+        self._gameboard[self._snakeY][self._snakeX] = f'{_GREEN}{_BLOCK}{_WHITE}'
 
     def eatFruit(self):
+        '''Verifica si la serpiente comio una fruta y la regenera'''
         if self._snakeX == self._fruitx and self._snakeY == self._fruity:
             self._score += 100
+            self._fruitCount += 1
             self._snake_len += 1
 
             tempDir = [self._snakeDir[-1][0], self._snakeDir[-1][1]]
@@ -167,6 +168,7 @@ class Game:
             self.spawnFruit()
 
     def isDeath(self):
+        '''Comprueba si el juego se termino'''
         if self._snakeX == 0 or self._snakeX == self._width-1:
             self._death = True
         if self._snakeY == 0 or self._snakeY == self._height-1:
@@ -175,36 +177,122 @@ class Game:
             if self._snake[i] == [self._snakeY, self._snakeX]:
                 self._death = True
 
-    def loop(self):
-        timer = FPSTimer(10)
-        while(True):
-            ch = getch.getch()
-            os.system(_CLEAR)
+    def gameOverScreen(self):
+        GameOverText = []
+        try:
+            with open('./Game_Over_text.txt', 'r', encoding='utf8') as text:
+                for line in text:
+                    GameOverText.append(line[:-2])
+                
+                posX = (self._width//2)-(len(GameOverText[0])//2)
+                posY = (self._height//2)-(len(GameOverText)//2)
 
-            if ch == 'w':
-                if self._snakeDir[0] != [1, 0]:
-                    self._snakeDir[0] = [-1, 0]
-            elif ch == 'd':
-                if self._snakeDir[0] != [0, -1]:
-                    self._snakeDir[0] = [0, 1]
-            elif ch == 's':
-                if self._snakeDir[0] != [-1, 0]:
-                    self._snakeDir[0] = [1, 0]
-            elif ch == 'a':
-                if self._snakeDir[0] != [0, 1]:
-                    self._snakeDir[0] = [0, -1]
-            else:
-                pass
+                for i in range(len(GameOverText)):
+                    for j in range(len(GameOverText[i])):
+                        self._gameboard[posY+i][posX+j] = GameOverText[i][j]
+                os.system(_CLEAR)
+                self.show()
+        except Exception as e:
+            # print(f'Error al abrir el archivo: {e}')
+            print('Game Over')
+
+
+    def loop(self):
+        '''Loop del juego'''
+        timer = FPSTimer(15)
+        sys.stdout.flush()
+        os.system(_CLEAR)
+        while(True):
+            sys.stdout.flush()
+            print("\033[F"*(self._height+_TOTAL_HEIGHT))
+            # print(chr(27) + "[2J")
+            if msvcrt.kbhit():
+                ch = ord(msvcrt.getch().lower())
+
+                if ch == ord('w'):
+                    if self._snakeDir[0] != [1, 0]:
+                        self._snakeDir[0] = [-1, 0]
+                elif ch == ord('d'):
+                    if self._snakeDir[0] != [0, -1]:
+                        self._snakeDir[0] = [0, 1]
+                elif ch == ord('s'):
+                    if self._snakeDir[0] != [-1, 0]:
+                        self._snakeDir[0] = [1, 0]
+                elif ch == ord('a'):
+                    if self._snakeDir[0] != [0, 1]:
+                        self._snakeDir[0] = [0, -1]
+                else:
+                    pass
 
             self.update()
             self.isDeath()
             self.show()
             if self._death == True:
-                print('Game Over')
+                self.gameOverScreen()
+                input('Presiona enter para continuar...')
+                os.system(_CLEAR)
+                print(f' Resultados del juego '.center(self._width, '='))
+                print(f'Puntuación...................................... {self._score}'.center(self._width, ' '))
+                print(f'Fruta comida.................................... {self._fruitCount}'.center(self._width, ' '))
+                while True:
+                    print('¿Quieres guardar tu record? (s/n)'.center(self._width, ' '), end='\r')
+                    save = ord(msvcrt.getch().lower())
+                    print(' '*self._width)
+                    if save == ord('s') or save == ord('S'):
+                        name = input('Ingresa tu nombre: ')
+                        try:
+                            with open('./Scores.txt', 'a', encoding='utf8') as scores:
+                                scores.write('%' + name + '\n')
+                                scores.write(str(self._fruitCount) + '\n')
+                                scores.write(str(self._score) + '\n')
+                        except Exception as e:
+                            print(f'Hubo un error al guardar el puntaje: {e}')
+                            input('Presiona enter para continuar')
+                        finally:
+                            break
+                    elif save == ord('n') or save == ord('N'):
+                        break
+                os.system(_CLEAR)
                 break
             timer.sleep()
 
 
 if __name__ == '__main__':
-    game = Game()
-    game.startGame()
+    while True:
+        os.system(_CLEAR)
+
+        try:
+            with open('./Title.txt', 'r', encoding='utf8') as text:
+                title = []
+                for line in text:
+                    title.append(line[:-2])
+                print('='*len(title[0]))
+                for line in title:
+                    print(line)
+                print(' Menu \U0001F40D '.center(len(title[0])-1, '='))
+        except Exception as e:
+            print(f'Ocurrió un error al abrir el archivo: {e}')
+            print('Snake')
+
+        print('''
+[1] Iniciar juego
+[2] Puntuaciones
+[3] Opciones
+[4] Salir''')
+
+        op = input('> ')
+
+        if op == '1':
+            game = Game()
+            game.startGame()
+            del game
+        elif op == '2':
+            print('Records xd')
+        elif op == '3':
+            print('Opciones')
+        elif op == '4':
+            break
+        elif op == '5':
+            game = Game()
+            game.gameOverScreen()
+            input()
