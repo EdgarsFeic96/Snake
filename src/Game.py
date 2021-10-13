@@ -1,5 +1,6 @@
 from random import randint
 from fpstimer import FPSTimer
+from time import sleep
 import sys
 import os
 import msvcrt
@@ -17,6 +18,9 @@ if '-dbg' in sys.argv:
 else:
     _TOTAL_HEIGHT = 2
 
+# Comprueba que este en src
+if os.getcwd()[-3:] != 'src':
+    os.chdir('src')
 
 class Game:
     def __init__(self) -> None:
@@ -232,10 +236,10 @@ class Game:
                 input('Presiona enter para continuar...')
                 os.system(_CLEAR)
                 print(f' Resultados del juego '.center(self._width, '='))
-                print(f'Puntuación...................................... {self._score}'.center(self._width, ' '))
-                print(f'Fruta comida.................................... {self._fruitCount}'.center(self._width, ' '))
+                print(f'Puntuación' + '.'*(self._width - len(str(self._score)) - 10) + f'{self._score}')
+                print(f'Fruta comida' + '.'*(self._width - len(str(self._fruitCount)) - 12) + f'{self._fruitCount}')
                 while True:
-                    print('¿Quieres guardar tu record? (s/n)'.center(self._width, ' '), end='\r')
+                    print('¿Quieres guardar tu puntaje? (s/n)'.center(self._width, ' '), end='\r')
                     save = ord(msvcrt.getch().lower())
                     print(' '*self._width)
                     if save == ord('s') or save == ord('S'):
@@ -243,7 +247,7 @@ class Game:
                         try:
                             with open('./Scores.txt', 'a', encoding='utf8') as scores:
                                 scores.write('%' + name + '\n')
-                                scores.write(str(self._fruitCount) + '\n')
+                                # scores.write(str(self._fruitCount) + '\n')
                                 scores.write(str(self._score) + '\n')
                         except Exception as e:
                             print(f'Hubo un error al guardar el puntaje: {e}')
@@ -272,7 +276,7 @@ if __name__ == '__main__':
                 print(' Menu \U0001F40D '.center(len(title[0])-1, '='))
         except Exception as e:
             print(f'Ocurrió un error al abrir el archivo: {e}')
-            print('Snake')
+            print('Snake \U0001F40D')
 
         print('''
 [1] Iniciar juego
@@ -287,9 +291,41 @@ if __name__ == '__main__':
             game.startGame()
             del game
         elif op == '2':
-            print('Records xd')
+            print()
+            print(' Puntuaciones '.center(40, '='))
+            try:
+                with open('./Scores.txt', 'r', encoding='utf8') as scores:
+                    scoreList = []
+                    
+                    for line in scores:
+                        if line[0] == '%':
+                            score = [line[1:-1], scores.readline()[0:-1]]
+                            scoreList.append(score)
+
+                    for score in scoreList:
+                        print(f'{score[0]}' + '.'*(40 - len(score[0]) - len(score[1])) + score[1])
+
+                    input('\nPresiona enter para salir...')
+
+            except Exception as e:
+                print(f'El archivo de puntajes no existe o está dañado: {e}')
         elif op == '3':
             print('Opciones')
+            print(f'[1] Eliminar puntuaciones')
+            print(f'[2] Regresar')
+            opc = input('>')
+
+            if opc == '1':
+                print(f'¿Estas seguro? (s/n) ', end='')
+                opc = input()
+                if opc == 's' or opc == 'S':
+                    os.remove(os.path.join('Scores.txt'))
+            elif opc == '2':
+                pass
+            else:
+                print('Opcion invalida')
+                sleep(1)
+
         elif op == '4':
             break
         elif op == '5':
