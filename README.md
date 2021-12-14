@@ -1,11 +1,15 @@
 # Snake
-## Requerimientos
+
+A Python game written in Python.
+
+![Python Game](./src/snake.gif)
+## Requirements
+
 fpstimer
 
-$ pip install fpstimer
-
-## Controles
-- 'w' Para subir
-- 's' Para bajar
-- 'a' Para ir a la izquierda
-- 'd' Para ir a la derecha
+    $ pip install fpstimer
+## Controls
+- 'w' Up
+- 's' Down
+- 'a' Left 
+- 'd' Right
